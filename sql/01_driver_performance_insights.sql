@@ -42,11 +42,11 @@ GROUP BY tr.driver_id
 ORDER BY revenue_per_mile DESC;
 
 
--- Rank drivers by monthly on-time performance (Window Function)
+-- Rank drivers by monthly on-time performance
 WITH monthly_drivers AS (
 	SELECT 
 	    tr.driver_id,
-	    DATE_TRUNC('MONTH', de.actual_date)::DATE AS month,
+	    DATE_TRUNC('MONTH', tr.dispatch_date)::DATE AS month,
 		COUNT(de.event_id) AS total_deliveries,
 		COUNT(CASE WHEN de.on_time_flag = TRUE THEN 1 END) AS on_time_deliveries,
 		ROUND(
@@ -57,8 +57,8 @@ WITH monthly_drivers AS (
 	JOIN delivery_events de
 	    ON tr.trip_id = de.trip_id
 	GROUP BY 
-			tr.driver_id,
-	    	month
+		tr.driver_id,
+	    DATE_TRUNC('MONTH', tr.dispatch_date)
 )
 SELECT 
 	*,
@@ -68,11 +68,11 @@ SELECT
     ) AS monthly_rank
 FROM monthly_drivers
 ORDER BY 
-    	month,
-	    monthly_rank;
+    month,
+	monthly_rank;
 
 
--- Identify top 10% drivers by revenue per mile (Window Function)
+-- Identify top 10% drivers by revenue per mile
 WITH drivers_revenue AS (
 	SELECT 
 		tr.driver_id,
@@ -100,7 +100,7 @@ WHERE revenue_bucket = 1
 ORDER BY revenue_per_mile DESC;
 
 
--- Compare each driver’s MPG against fleet average MPG (CTE + Window Avg)
+-- Compare each driver’s MPG against fleet average MPG
 WITH fleet_avg AS (
 	SELECT 
 		AVG(average_mpg) AS avg_mpg
@@ -119,7 +119,7 @@ GROUP BY
 ORDER BY mpg_difference DESC;
 
 
--- Month-over-Month revenue trend per driver (Time Series + LAG)
+-- Month-over-Month revenue trend per driver
 WITH monthly_rev AS (
 	SELECT 
 		tr.driver_id,
@@ -132,7 +132,7 @@ WITH monthly_rev AS (
 		ON tr.load_id = lo.load_id
 	GROUP BY 
 		tr.driver_id,
-		month
+		DATE_TRUNC('MONTH', tr.dispatch_date)
 )
 SELECT 
 	*,
@@ -151,9 +151,7 @@ WITH driver_monthly_mpg AS (
 	SELECT 
 		driver_id,
 		DATE_TRUNC('MONTH', dispatch_date)::DATE AS month,
-		ROUND(
-			AVG(average_mpg), 2
-		) AS avg_mpg
+		ROUND(AVG(average_mpg), 2) AS avg_mpg
 	FROM trips
 	GROUP BY 
 		driver_id,
