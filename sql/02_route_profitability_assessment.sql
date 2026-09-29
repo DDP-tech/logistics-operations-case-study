@@ -3,9 +3,7 @@
 -- Total Revenue per Route
 SELECT 
 	route_id,
-	ROUND(
-		SUM(revenue), 2
-	) AS total_revenue
+	ROUND(SUM(revenue), 2) AS total_revenue
 FROM loads
 GROUP BY route_id
 ORDER BY total_revenue DESC;
@@ -14,9 +12,7 @@ ORDER BY total_revenue DESC;
 -- Total Fuel Cost per Route
 SELECT 
 	lo.route_id,
-	ROUND(
-		SUM(fp.total_cost), 2
-	) AS total_fuel_cost
+	ROUND(SUM(fp.total_cost), 2) AS total_fuel_cost
 FROM loads lo
 JOIN trips tr
 	ON lo.load_id = tr.load_id
@@ -26,9 +22,9 @@ GROUP BY lo.route_id
 ORDER BY total_fuel_cost DESC;
 
 
--- Net Route Profitability (Revenue – Fuel Cost)
+-- Net Route Profitability
 WITH route_revenue AS (
-	SELECT
+	SELECT 
 		route_id,
 		SUM(revenue) AS total_revenue
 	FROM loads
@@ -51,16 +47,14 @@ SELECT
 	ROUND(
 		COALESCE(rf.fuel_cost, 0), 2
 	) AS total_fuel_cost,
-	ROUND(
-		rr.total_revenue - COALESCE(rf.fuel_cost, 0), 2
-	) AS net_profit
+	ROUND(rr.total_revenue - COALESCE(rf.fuel_cost, 0), 2) AS net_profit
 FROM route_revenue rr
 LEFT JOIN route_fuel rf
 	ON rr.route_id = rf.route_id
 ORDER BY net_profit DESC;
 
 
--- Monthly Profit Trend per Route (Time Series)
+-- Monthly Profit Trend per Route
 WITH route_revenue AS (
 	SELECT 
 		lo.route_id,
@@ -113,9 +107,9 @@ ORDER BY
 	month;
 
 
--- Top 5 most profitable routes per quarter (Window Function)
+-- Top 5 most profitable routes per quarter
 WITH route_revenue AS (
-	SELECT
+	SELECT 
 		lo.route_id,
 		DATE_TRUNC('QUARTER', tr.dispatch_date)::DATE AS quarter,
 		SUM(lo.revenue) AS total_revenue
@@ -153,7 +147,7 @@ route_profit AS (
 		AND rr.quarter = rf.quarter
 ),
 final_route AS (
-	SELECT
+	SELECT 
 		route_id,
 		quarter,
 		net_profit,
@@ -168,7 +162,7 @@ ORDER BY
 	rank_in_quarter;
 
 
--- Routes with increasing fuel cost trend over last 3 months (LAG)
+-- Routes with increasing fuel cost trend over last 3 months
 WITH route_fuel AS (
 	SELECT 
 		lo.route_id,
@@ -188,7 +182,7 @@ fuel_trend AS (
 		route_id,
 		month,
 		fuel_cost,
-		LAG(fuel_cost, 1) OVER(PARTITION BY route_id ORDER BY month) AS prev_month_cost,
+		LAG(fuel_cost, 1) OVER(PARTITION BY route_id ORDER BY month) AS prev_1_month_cost,
 		LAG(fuel_cost, 2) OVER(PARTITION BY route_id ORDER BY month) AS prev_2_month_cost
 	FROM route_fuel
 ),
@@ -201,21 +195,21 @@ SELECT
 	ft.route_id,
 	ft.month,
 	ft.fuel_cost,
-	ft.prev_month_cost,
+	ft.prev_1_month_cost,
 	ft.prev_2_month_cost
 FROM fuel_trend ft
 CROSS JOIN max_month mm
-WHERE ft.month >= mm.latest_month - INTERVAL '2 MONTH'	-- Last 3 months filter
-	AND ft.fuel_cost > ft.prev_month_cost
-	AND ft.prev_month_cost > ft.prev_2_month_cost
-ORDER BY
+WHERE ft.month >= mm.latest_month - INTERVAL '2 MONTH'
+	AND ft.fuel_cost > ft.prev_1_month_cost
+	AND ft.prev_1_month_cost > ft.prev_2_month_cost
+ORDER BY 
 	ft.route_id,
 	ft.month;
 
 
--- Compare route profitability vs company average (CTE)
+-- Compare route profitability vs company average
 WITH route_revenue AS (
-	SELECT
+	SELECT 
 		route_id,
 		SUM(revenue) AS total_revenue
 	FROM loads
@@ -235,10 +229,6 @@ route_fuel AS (
 route_profit AS (
 	SELECT 
 		rr.route_id,
-		ROUND(rr.total_revenue, 2) AS total_revenue,
-		ROUND(
-			COALESCE(rf.fuel_cost, 0), 2
-		) AS total_fuel_cost,
 		ROUND(
 			rr.total_revenue - COALESCE(rf.fuel_cost, 0), 2
 		) AS net_profit
@@ -251,11 +241,11 @@ avg_profit AS (
 		ROUND(AVG(net_profit), 2) AS company_average
 	FROM route_profit
 )
-SELECT 
+SELECT
 	rp.route_id,
 	rp.net_profit,
 	ap.company_average,
-	ROUND((rp.net_profit - ap.company_average), 2) AS difference,
+	ROUND(rp.net_profit - ap.company_average, 2) AS difference,
 	CASE
 		WHEN rp.net_profit > ap.company_average THEN 'Above Average'
 		WHEN rp.net_profit < ap.company_average THEN 'Below Average'
@@ -268,25 +258,25 @@ ORDER BY rp.route_id;
 
 -- Which route generated the highest revenue last month?
 WITH route_revenue AS (
-    SELECT
-        lo.route_id,
+	SELECT 
+		lo.route_id,
 		DATE_TRUNC('MONTH', tr.dispatch_date)::DATE AS month,
-        SUM(lo.revenue) AS total_revenue
-    FROM loads lo
-    JOIN trips tr
-        ON lo.load_id = tr.load_id
-    WHERE DATE_TRUNC('MONTH', tr.dispatch_date) = (
-        SELECT DATE_TRUNC('MONTH', MAX(dispatch_date))
-        FROM trips)
-    GROUP BY 
+		SUM(lo.revenue) AS total_revenue
+	FROM loads lo
+	JOIN trips tr
+		ON lo.load_id = tr.load_id
+	WHERE DATE_TRUNC('MONTH', tr.dispatch_date) = (
+		SELECT DATE_TRUNC('MONTH', MAX(dispatch_date))
+		FROM trips)
+	GROUP BY
 		lo.route_id,
 		DATE_TRUNC('MONTH', tr.dispatch_date)
-)
-SELECT
-    route_id,
+	)
+SELECT 
+	route_id,
 	month,
-    total_revenue
+	ROUND(total_revenue, 2) AS total_revenue
 FROM route_revenue
 WHERE total_revenue = (
-    SELECT MAX(total_revenue)
-    FROM route_revenue);
+	SELECT MAX(total_revenue)
+	FROM route_revenue);
