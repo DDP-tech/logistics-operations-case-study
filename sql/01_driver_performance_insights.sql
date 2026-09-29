@@ -6,8 +6,7 @@ SELECT
 	COUNT(de.event_id) AS total_deliveries,
 	COUNT(CASE WHEN de.on_time_flag = TRUE THEN 1 END) AS on_time_deliveries,
 	ROUND(
-		(COUNT(CASE WHEN de.on_time_flag = TRUE THEN 1 END) * 100.0) / COUNT(de.event_id),
-		2
+		(COUNT(CASE WHEN de.on_time_flag = TRUE THEN 1 END) * 100.0) / COUNT(de.event_id), 2
 	) AS on_time_delivery_rate
 FROM trips tr
 JOIN delivery_events de
@@ -31,8 +30,7 @@ SELECT
 	SUM(tr.actual_distance_miles) AS total_distance,
 	ROUND(SUM(lo.revenue), 2) AS total_revenue,
 	ROUND(
-		SUM(lo.revenue) / NULLIF(SUM(tr.actual_distance_miles), 0), 
-		2
+		SUM(lo.revenue) / NULLIF(SUM(tr.actual_distance_miles), 0), 2
 	) AS revenue_per_mile
 FROM trips tr
 JOIN loads lo
@@ -49,8 +47,7 @@ WITH monthly_drivers AS (
 		COUNT(de.event_id) AS total_deliveries,
 		COUNT(CASE WHEN de.on_time_flag = TRUE THEN 1 END) AS on_time_deliveries,
 		ROUND(
-			(COUNT(CASE WHEN de.on_time_flag = TRUE THEN 1 END) * 100.0) / COUNT(de.event_id),
-			2
+			(COUNT(CASE WHEN de.on_time_flag = TRUE THEN 1 END) * 100.0) / COUNT(de.event_id), 2
 		) AS on_time_delivery_rate
 	FROM trips tr
 	JOIN delivery_events de
@@ -78,8 +75,7 @@ WITH drivers_revenue AS (
 		ROUND(SUM(tr.actual_distance_miles), 2) AS total_distance_miles,
 		ROUND(SUM(lo.revenue), 2) AS total_revenue,
 		ROUND(
-			SUM(lo.revenue) / NULLIF(SUM(tr.actual_distance_miles), 0), 
-			2
+			SUM(lo.revenue) / NULLIF(SUM(tr.actual_distance_miles), 0), 2
 		) AS revenue_per_mile
 	FROM trips tr
 	JOIN loads lo
@@ -111,8 +107,7 @@ SELECT
 	ROUND(AVG(tr.average_mpg), 2) AS driver_avg_mpg,
 	ROUND(fa.avg_mpg, 2) AS fleet_avg_mpg,
 	ROUND(
-		AVG(tr.average_mpg) - fa.avg_mpg, 
-		2
+		AVG(tr.average_mpg) - fa.avg_mpg, 2
 	) AS mpg_difference
 FROM trips tr
 CROSS JOIN fleet_avg fa
@@ -127,10 +122,7 @@ WITH monthly_rev AS (
 	SELECT 
 		tr.driver_id,
 		DATE_TRUNC('MONTH', tr.dispatch_date)::DATE AS month,
-		ROUND(
-			SUM(lo.revenue),
-			2
-		) AS monthly_revenue
+		ROUND(SUM(lo.revenue), 2) AS monthly_revenue
 	FROM trips tr
 	JOIN loads lo
 		ON tr.load_id = lo.load_id
@@ -142,8 +134,7 @@ SELECT
 	*,
 	LAG(monthly_revenue) OVER (PARTITION BY driver_id ORDER BY month) AS previous_month_revenue,
 	ROUND(
-		monthly_revenue - LAG(monthly_revenue) OVER (PARTITION BY driver_id ORDER BY month), 
-		2
+		monthly_revenue - LAG(monthly_revenue) OVER (PARTITION BY driver_id ORDER BY month), 2
 	) AS revenue_trend
 FROM monthly_rev
 ORDER BY 
