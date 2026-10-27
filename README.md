@@ -124,6 +124,6 @@ The repository contains:
 
 ## Author
 
-[Divyadarshan Pattanayak](www.linkedin.com/in/divyadarshan-pattanayak-2a3a3437a)
+[Divyadarshan Pattanayak](https://www.linkedin.com/in/divyadarshan-pattanayak-2a3a3437a/)
 
 Date: October 2026
