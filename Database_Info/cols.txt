@@ -1,0 +1,60 @@
+drivers.csv
+driver_id,first_name,last_name,hire_date,termination_date,license_number,license_state,date_of_birth,home_terminal,employment_status,cdl_class,years_experience
+DRV00001,Jennifer,Hernandez,2014-10-31,,DL673510887,WA,1973-11-07,Denver,Active,A,3
+
+maintenance_records,csv
+maintenance_id,truck_id,maintenance_date,maintenance_type,odometer_reading,labor_hours,labor_cost,parts_cost,total_cost,facility_location,downtime_hours,service_description
+MAINT00000001,TRK00085,2022-01-01,Inspection,400255,7.8,781.42,10.41,791.83,Kansas City,22.2,Emergency Inspection
+
+
+safety_incidents.csv
+incident_id,trip_id,truck_id,driver_id,incident_date,incident_time,incident_type,location_city,location_state,at_fault_flag,injury_flag,vehicle_damage_cost,cargo_damage_cost,claim_amount,preventable_flag,description
+INC00000001,TRIP00036079,TRK00006,DRV00006,09-04-2023,14:00:00,Moving Violation,Columbus,PA,TRUE,FALSE,12629.26,0,12629.26,TRUE,Severe incident involving equipment
+
+
+facilities.csv
+facility_id,facility_name,facility_type,city,state,latitude,longitude,dock_doors,operating_hours
+FAC00001,Houston Distribution Center,Cross-Dock,Houston,TX,29.7604,-95.3698,125,12AM - 11:59PM
+
+trips.csv
+trip_id,load_id,driver_id,truck_id,trailer_id,dispatch_date,actual_distance_miles,actual_duration_hours,fuel_gallons_used,average_mpg,idle_time_hours,trip_status
+TRIP00000001,LOAD00000001,DRV00117,TRK00035,TRL00167,2022-01-01,1314,26.2,183.8,7.15,3.5,Completed
+
+
+driver_monthly_metrics.csv
+driver_id,month,trips_completed,total_miles,total_revenue,average_mpg,total_fuel_gallons,on_time_delivery_rate,average_idle_hours
+DRV00001,2022-01-01,26,36620,79141.59,6.61,5574.7,0.385,8.2
+
+delivery_events.csv (Big File)
+event_id,load_id,trip_id,event_type,facility_id,scheduled_datetime,actual_datetime,detention_minutes,on_time_flag,location_city,location_state
+EVT00000001,LOAD00000001,TRIP00000001,Pickup,FAC00034,2022-01-01 18:00:00.000000,2022-01-01 20:58:55.918185,0,False,Houston,TX
+
+
+truck_utilization_metrics.csv
+truck_id,month,trips_completed,total_miles,total_revenue,average_mpg,maintenance_events,maintenance_cost,downtime_hours,utilization_rate
+TRK00001,01-01-2022,22,39269,84792.02,6.78,2,4380.98,63.1,0.71
+
+fuel_purchase.csv
+fuel_purchase_id,trip_id,truck_id,driver_id,purchase_date,purchase_time,location_city,location_state,gallons,price_per_gallon,total_cost,fuel_card_number
+FUEL00000001,TRIP00051284,TRK00045,DRV00102,22-10-2023,05:00:00,Columbus,MN,131.6,3.399,447.31,FC567161
+
+
+trailers.csv
+trailer_id,trailer_number,trailer_type,length_feet,model_year,vin,acquisition_date,status,current_location
+TRL00001,4290,Refrigerated,53,2016,1AV889081755621178,2018-05-11,Active,Kansas City
+
+loads.csv
+load_id,customer_id,route_id,load_date,load_type,weight_lbs,pieces,revenue,fuel_surcharge,accessorial_charges,load_status,booking_type
+LOAD00000001,CUST00183,RTE00019,2022-01-01,Dry Van,19178,13,3045.23,406.72,100,Completed,Spot
+
+customers.csv
+customer_id,customer_name,customer_type,credit_terms_days,primary_freight_type,account_status,contract_start_date,annual_revenue_potential
+CUST00001,Metro Wholesale,Dedicated,60,General,Inactive,2020-02-20,985117
+
+trucks.csv
+truck_id,unit_number,make,model_year,vin,acquisition_date,acquisition_mileage,fuel_type,tank_capacity_gallons,status,home_terminal
+TRK00001,3463,Peterbilt,2016,1VV205190335317039,2017-04-27,18814,Diesel,200,Active,Omaha
+
+routes.csv
+route_id,origin_city,origin_state,destination_city,destination_state,typical_distance_miles,base_rate_per_mile,fuel_surcharge_rate,typical_transit_days
+RTE00001,Atlanta,GA,Chicago,IL,677,1.7,0.19,1
